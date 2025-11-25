@@ -1,0 +1,6 @@
+*.log
+*.pem
+*.key
+.DS_Store
+backup_*/
+tmp/
