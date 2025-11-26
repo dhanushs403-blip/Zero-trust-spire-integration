@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mtls-app
+  labels:
+    app: mtls-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mtls-demo
+  template:
+    metadata:
+      labels:
+        app: mtls-demo
+    spec:
+      containers:
+        - name: mtls-app
+          image: mtls-demo-image:latest
+          imagePullPolicy: Never # Use local image
+          command: ["python3", "mtls_demo.py"]
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          workingDir: /app
+          securityContext:
+            runAsNonRoot: false # Need root to access host socket
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+          volumeMounts:
+            - name: spire-agent-socket
+              mountPath: /tmp/spire-agent/public/api.sock
+            - name: spire-agent-binary
+              mountPath: /opt/spire/bin/spire-agent
+              readOnly: true
+      volumes:
+        - name: spire-agent-socket
+          hostPath:
+            path: /tmp/spire-agent/public/api.sock
+            type: Socket
+        - name: spire-agent-binary
+          hostPath:
+            path: /opt/spire/bin/spire-agent
+            type: File
