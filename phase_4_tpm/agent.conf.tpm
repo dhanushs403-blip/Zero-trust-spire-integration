@@ -1,0 +1,46 @@
+agent {
+    data_dir = "/opt/spire/data/agent"
+    log_level = "INFO"
+    log_file = "/opt/spire/agent.log"
+    server_address = "127.0.0.1"
+    server_port = "8081"
+    socket_path = "/tmp/spire-agent/public/api.sock"
+    trust_bundle_path = "/opt/spire/conf/agent/bootstrap.crt"
+    trust_domain = "example.org"
+}
+
+plugins {
+    NodeAttestor "join_token" {
+        plugin_data {}
+    }
+
+    # NOTE: TPM plugin (tpm_devid) is not available in standard SPIRE distributions
+    # For TPM attestation, you need to either:
+    # 1. Build SPIRE with TPM support from source
+    # 2. Use application-layer TPM validation (see README_TPM_STATUS.md)
+    # 3. Wait for official TPM plugin support
+    #
+    # NodeAttestor "tpm_devid" {
+    #     plugin_data {
+    #         tpm_device_path = "/dev/tpmrm0"
+    #         devid_cert_path = "/opt/spire/conf/tpm/devid.crt"
+    #         devid_priv_key_path = "/opt/spire/conf/tpm/devid.key"
+    #     }
+    # }
+
+    KeyManager "disk" {
+        plugin_data {
+            directory = "/opt/spire/data/agent"
+        }
+    }
+
+    WorkloadAttestor "docker" {
+        plugin_data {
+            docker_socket_path = "unix:///var/run/docker.sock"
+        }
+    }
+
+    WorkloadAttestor "unix" {
+        plugin_data {}
+    }
+}

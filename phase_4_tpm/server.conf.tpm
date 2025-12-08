@@ -1,0 +1,46 @@
+server {
+    bind_address = "0.0.0.0"
+    bind_port = "8081"
+    trust_domain = "example.org"
+    data_dir = "/opt/spire/data/server"
+    log_level = "INFO"
+    log_file = "/opt/spire/server.log"
+}
+
+plugins {
+    DataStore "sql" {
+        plugin_data {
+            database_type = "sqlite3"
+            connection_string = "/opt/spire/data/server/datastore.sqlite3"
+        }
+    }
+
+    NodeAttestor "join_token" {
+        plugin_data {}
+    }
+
+    # NOTE: TPM plugin (tpm_devid) is not available in standard SPIRE distributions
+    # For TPM attestation, you need to either:
+    # 1. Build SPIRE with TPM support from source
+    # 2. Use application-layer TPM validation (see README_TPM_STATUS.md)
+    # 3. Wait for official TPM plugin support
+    #
+    # NodeAttestor "tpm_devid" {
+    #     plugin_data {
+    #         devid_ca_path = "/opt/spire/conf/tpm/devid-ca.crt"
+    #     }
+    # }
+
+    KeyManager "disk" {
+        plugin_data {
+            keys_path = "/opt/spire/data/server/keys.json"
+        }
+    }
+
+    # NOTE: k8sbundle notifier removed - only needed when running SPIRE Server inside Kubernetes
+    # For standalone deployments, this plugin is not required
+    #
+    # Notifier "k8sbundle" {
+    #     plugin_data {}
+    # }
+}
